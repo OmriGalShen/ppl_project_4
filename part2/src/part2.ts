@@ -98,14 +98,12 @@ const sleep = (timeout:number) => new Promise(resolve => setTimeout(resolve, tim
 
 const tryThreeTimes = async (func:(v:any)=>Promise<any>, v:any):Promise<any> => {
     try{
-        const res = await func(v);
-        return res;
+        return await func(v);
     }
     catch(e){
         await sleep(200);
         try{
-            const res = await func(v);
-            return res;
+            return await func(v);
         }
         catch(e){
             await sleep(200);
