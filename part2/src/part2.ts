@@ -68,9 +68,18 @@ export function asycMemo<T, R>(f: (param: T) => R): (param: T) => Promise<R> {
 /* 2.3 */
 
 export function lazyFilter<T>(genFn: () => Generator<T>, filterFn: (v:T)=>boolean): () => Generator<T> {
+    const generator = genFn();
+    
     return (function*(){
-        const val = genFn().next().value;
-        filterFn(val)? yield val:yield;  
+        let val = generator.next().value;
+        console.log(val);
+        
+        while(!filterFn(val)){
+        console.log(val);
+            val = generator.next().value;
+        }
+        yield val;
+        // filterFn(val)? yield val:yield;  
     })
 }
 
