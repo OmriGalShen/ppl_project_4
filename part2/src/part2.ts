@@ -44,15 +44,6 @@ export function getAll<K, V>(
 
 /* 2.2 */
 
-// const asycMemoHelper = async <T,R>(store:PromisedStore<T,R>,f: (param: T) => R):(param: T) => Promise<R> => {
-//     const param:T = f.arguments[0];
-//     const res = await store.get(param);
-//     if(res !== undefined)
-//         return (param:T)=>store.get(param);
-//     const val =f(param);
-//     store.set(param,val);
-//     return (param:T)=>store.get(param);
-// }
 
 const asycMemoHelper =
   <T, R>(
@@ -60,11 +51,14 @@ const asycMemoHelper =
     f: (param: T) => R
   ): ((param: T) => Promise<R>) =>
   async (param: T) => {
-    const res = await store.get(param);
-    if (res !== undefined) return store.get(param);
-    const val = f(param);
-    store.set(param, val);
-    return store.get(param);
+    try {
+      const res = await store.get(param);
+      return store.get(param);
+    } catch (e) {
+      const val = f(param);
+      store.set(param, val);
+      return store.get(param);
+    }
   };
 
 export function asycMemo<T, R>(f: (param: T) => R): (param: T) => Promise<R> {
