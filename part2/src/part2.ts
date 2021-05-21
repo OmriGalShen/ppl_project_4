@@ -71,21 +71,23 @@ export function lazyFilter<T>(genFn: () => Generator<T>, filterFn: (v:T)=>boolea
     const generator = genFn();
     
     return (function*(){
-        let val = generator.next().value;
-        console.log(val);
-        
-        while(!filterFn(val)){
-        console.log(val);
+        let val:T= generator.next().value;
+        while(val !== undefined){
+            if(filterFn(val)) yield val;
             val = generator.next().value;
-        }
-        yield val;
-        // filterFn(val)? yield val:yield;  
+        }  
     })
 }
 
 export function lazyMap<T, R>(genFn: () => Generator<T>, mapFn: (v:T)=>R): () => Generator<R> {
+    const generator = genFn();
+    
     return (function*(){
-        yield mapFn(genFn().next().value); 
+        let val:T= generator.next().value;
+        while(val !== undefined){
+            yield mapFn(val);
+            val = generator.next().value;
+        }  
     })
 }
 
