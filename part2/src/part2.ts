@@ -95,20 +95,19 @@ export function lazyMap<T, R>(genFn: () => Generator<T>, mapFn: (v:T)=>R): () =>
 // you can use 'any' in this question
 
 const sleep = (timeout:number) => new Promise(resolve => setTimeout(resolve, timeout));
+const TIMEOUT = 2000;
 
 const tryThreeTimes = async (func:(v:any)=>Promise<any>, v:any):Promise<any> => {
     try{
-        const res = await func(v);
-        return res;
+        return await func(v);
     }
     catch(e){
-        await sleep(200);
+        await sleep(TIMEOUT);
         try{
-            const res = await func(v);
-            return res;
+            return await func(v);
         }
         catch(e){
-            await sleep(200);
+            await sleep(TIMEOUT);
             return await func(v);
         }
     }
