@@ -1,6 +1,7 @@
 /* 2.1 */
 
 export const MISSING_KEY = "___MISSING___";
+const TIMEOUT = 2000;
 
 type PromisedStore<K, V> = {
   get(key: K): Promise<V>;
@@ -94,7 +95,6 @@ export function lazyMap<T, R>(genFn: () => Generator<T>, mapFn: (v:T)=>R): () =>
 // you can use 'any' in this question
 
 const sleep = (timeout:number) => new Promise(resolve => setTimeout(resolve, timeout));
-const TIMEOUT = 2000;
 
 const tryThreeTimes = async (func:(v:any)=>Promise<any>, v:any):Promise<any> => {
     try{
