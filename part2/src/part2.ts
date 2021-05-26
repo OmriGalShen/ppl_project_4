@@ -52,12 +52,11 @@ const asycMemoHelper =
   ): ((param: T) => Promise<R>) =>
   async (param: T) => {
     try {
-      const res = await store.get(param);
-      return store.get(param);
+      return await store.get(param);
     } catch (e) {
       const val = f(param);
       store.set(param, val);
-      return store.get(param);
+      return val;
     }
   };
 
