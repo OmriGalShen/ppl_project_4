@@ -104,16 +104,12 @@ const checkNoOccurrence = (tvar: T.TVar, te: T.TExp, exp: A.Exp): Result<true> =
 // TODO:
 
 export const makeTEnvFromClasses = (parsed: A.Parsed): E.TEnv => {
-
-    const classNames:string[] = R.map((exp:A.ClassExp)=>exp.typeName.var,A.parsedToClassExps(parsed));    
-    // const classesTypes:T.TExp[] = R.map((exp:A.ClassExp)=>T.makeClassTExp(exp.typeName.var,typeofClass(exp,E.makeEmptyTEnv())),A.parsedToClassExps(parsed));
-    const classesTypes:T.TExp[] = [];
-
-    return E.makeExtendTEnv(classNames,classesTypes,E.makeEmptyTEnv());
-    // return E.makeExtendTEnv(classNames,Array(classNames.length).fill(T.makeClassTExp()),E.makeEmptyTEnv());
-    // return E.makeExtendTEnv(A.parsedToClassExps(parsed).zip())
-    // return A.parsedToClassExps(parsed).reduce((acc:E.TEnv,curr:A.ClassExp)=>E.makeExtendTEnv(curr.typeName.var,T.ClassTExp,acc),E.makeEmptyTEnv());
-    // return E.makeEmptyTEnv();
+    const classList:A.ClassExp[] = A.parsedToClassExps(parsed)
+    const classTNames:string[] = R.map((exp:A.ClassExp)=>exp.typeName.var,classList);    
+    const classTypes:T.TVar[] = R.map((exp:A.ClassExp)=>exp.typeName,classList);    
+    return E.makeExtendTEnv(classTNames,classTypes,E.makeEmptyTEnv());
+    // const constraint1 = bind(typeofExps(proc.body, extTEnv), (bodyTE: T.TExp) => checkEqualType(bodyTE, proc.returnTE, proc));
+    // return bind(constraint1, _ => makeOk(T.makeProcTExp(argsTEs, proc.returnTE)));
 }
 
 // Purpose: Compute the type of a concrete expression
