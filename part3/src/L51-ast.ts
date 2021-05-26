@@ -335,10 +335,17 @@ const parseClassExp = (params: Sexp[]): Result<ClassExp> =>
     (params.length != 4) || (params[0] != ':') ? makeFailure(`class must have shape (class [: <type>]? <fields> <methods>) - got ${params.length} params instead`) :
     parseGoodClassExp(params[1], params[2], params[3]);
 
-const parseGoodClassExp = (typeName: Sexp, varDecls: Sexp, bindings: Sexp): Result<ClassExp> =>
-    makeFailure("TODO parseGoodClassExp");
+const parseGoodClassExp = (typeName: Sexp, varDecls: Sexp, bindings: Sexp): Result<ClassExp> =>{
+    const checkString = (name:Sexp):Result<string> => isString(name)? makeOk(name):makeFailure("class name parse error");
+    if(!isGoodBindings(bindings)) return makeFailure("class bindings parse error");
+    if(!isArray(varDecls)) return makeFailure("class varDecls parse error");
+    const args = mapResult(parseVarDecl, varDecls);
+    return safe3((name:string, fields: VarDecl[], bdgs: Binding[]) => makeOk(makeClassExp(makeTVar(name),fields,bdgs)))
+            (checkString(typeName), args, parseBindings(bindings));
+}
+    
 
-// sexps has the shape (quote <sexp>)
+// sexps has the sha pe (quote <sexp>)
 export const parseLitExp = (param: Sexp): Result<LitExp> =>
     bind(parseSExp(param), (sexp: SExpValue) => makeOk(makeLitExp(sexp)));
 
@@ -447,10 +454,43 @@ const unparseClassExp = (ce: ClassExp, unparseWithTVars?: boolean): Result<strin
 
 // L51: Collect named types in AST
 // Collect class expressions in parsed AST so that they can be passed to the type inference module
-
-export const parsedToClassExps = (p: Parsed): ClassExp[] => 
+// TODO:
+export const parsedToClassExps = (p: Parsed): ClassExp[] =>
     // TODO parsedToClassExps
-    [];
+    isExp(p)? 
+        (isDefineExp(p)? 
+        (isClassExp(p.val)? [p.val]:[]):
+        [])
+    :
+    isProgram(p)? p.exps.reduce((acc:ClassExp[],curr:Exp)=>acc.concat(parsedToClassExps(curr)),[]):
+    [] // never reached
+
+
+    
+    
+    
+    
+    // NumExp | StrExp | BoolExp | PrimOp | VarRef
+    // isNumExp(p) ? [] :
+    // isStrExp(p) ? [] :
+    // isBoolExp(p) ? [] :
+    // isPrimOp(p) ? [] :
+    // isVarRef(p) ? [] :
+    // // AppExp | IfExp | ProcExp | LetExp | LitExp | LetrecExp | SetExp
+    // isAppExp(p) ? parsedToClassExps(p.rator).concat(p.rands.reduce((acc:ClassExp[],curr:CExp)=>acc.concat(parsedToClassExps(curr)),[])) :  
+    // isIfExp(p) ? parsedToClassExps(p.test).concat(parsedToClassExps(p.then)).concat(parsedToClassExps(p.alt)):
+    // isLetExp(e) ? unparseLetExp(e, unparseWithTVars) :
+    // isLetrecExp(e) ? unparseLetrecExp(e, unparseWithTVars) :
+    // isProcExp(e) ? unparseProcExp(e, unparseWithTVars) :
+    // isLitExp(e) ? makeOk(unparseLitExp(e)) :
+    // isSetExp(e) ? unparseSetExp(e, unparseWithTVars) :
+    // isClassExp(e) ? unparseClassExp(e, unparseWithTVars) :
+    // // DefineExp | Program
+    // isDefineExp(e) ? safe2((vd: string, val: string) => makeOk(`(define ${vd} ${val})`))
+    //                     (unparseVarDecl(e.var, unparseWithTVars), unparse(e.val, unparseWithTVars)) :
+    // isProgram(e) ? bind(unparseLExps(e.exps, unparseWithTVars), (exps: string) => makeOk(`(L5 ${exps})`)) :
+    // e;
+
 
 // L51 
 export const classExpToClassTExp = (ce: ClassExp): ClassTExp => 
