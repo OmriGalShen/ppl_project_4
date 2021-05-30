@@ -104,7 +104,7 @@ const checkNoOccurrence = (tvar: T.TVar, te: T.TExp, exp: A.Exp): Result<true> =
 // TODO:
 
 export const makeTEnvFromClasses = (parsed: A.Parsed): E.TEnv => {
-    const classList:A.ClassExp[] = A.parsedToClassExps(parsed)
+    const classList:A.ClassExp[] = A.parsedToClassExps(parsed);
     const classTNames:string[] = R.map((exp:A.ClassExp)=>exp.typeName.var,classList);    
     const classTypes:T.TVar[] = R.map((exp:A.ClassExp)=>exp.typeName,classList);    
     return E.makeExtendTEnv(classTNames,classTypes,E.makeEmptyTEnv());
@@ -264,7 +264,8 @@ const typeofProgramExps = (exp: A.Exp, exps: A.Exp[], tenv: E.TEnv): Result<T.TE
     return isEmpty(exps) ? 
     typeofExp(exp,tenv) :
     A.isDefineExp(exp)?
-    bind(typeofDefine(exp,tenv),type => typeofProgramExps(first(exps),rest(exps),E.makeExtendTEnv([exp.var.var],[exp.var.texp],tenv))):
+    bind(typeofDefine(exp,tenv),type => 
+    typeofProgramExps(first(exps),rest(exps),E.makeExtendTEnv([exp.var.var],[exp.var.texp],tenv))):
     bind(typeofExp(exp,tenv),_ => typeofProgramExps(first(exps),rest(exps),tenv));
 }
     
@@ -301,6 +302,10 @@ export const typeofSet = (exp: A.SetExp, tenv: E.TEnv): Result<T.VoidTExp> =>
 // TODO:
 export const typeofClass = (exp: A.ClassExp, tenv: E.TEnv): Result<T.TExp> => {
     const newEnv = E.makeExtendTEnv(R.map(v=>v.var,exp.fields),R.map(v=>v.texp, exp.fields),tenv)
-    const constraints = mapResult((b)=>bind(typeofExp(b.val,newEnv),vt=> checkEqualType(vt,b.var.texp,exp)),exp.methods)
+    const vals = R.map((b) => b.val, exp.methods);
+    const varTEs = R.map((b) => b.var.texp, exp.methods);
+    const constraints = zipWithResult((varTE, val) => bind(typeofExp(val, newEnv),
+                                                           (valTE: T.TExp) => checkEqualType(varTE, valTE, exp)),
+                                      varTEs, vals);    
     return bind(constraints, _ => makeOk(T.makeClassTExp(exp.typeName.var,R.map(v=>[v.var.var,v.var.texp],exp.methods))));
 };
