@@ -465,33 +465,6 @@ export const parsedToClassExps = (p: Parsed): ClassExp[] =>
     isProgram(p)? p.exps.reduce((acc:ClassExp[],curr:Exp)=>acc.concat(parsedToClassExps(curr)),[]):
     [] // never reached
 
-
-    
-    
-    
-    
-    // NumExp | StrExp | BoolExp | PrimOp | VarRef
-    // isNumExp(p) ? [] :
-    // isStrExp(p) ? [] :
-    // isBoolExp(p) ? [] :
-    // isPrimOp(p) ? [] :
-    // isVarRef(p) ? [] :
-    // // AppExp | IfExp | ProcExp | LetExp | LitExp | LetrecExp | SetExp
-    // isAppExp(p) ? parsedToClassExps(p.rator).concat(p.rands.reduce((acc:ClassExp[],curr:CExp)=>acc.concat(parsedToClassExps(curr)),[])) :  
-    // isIfExp(p) ? parsedToClassExps(p.test).concat(parsedToClassExps(p.then)).concat(parsedToClassExps(p.alt)):
-    // isLetExp(e) ? unparseLetExp(e, unparseWithTVars) :
-    // isLetrecExp(e) ? unparseLetrecExp(e, unparseWithTVars) :
-    // isProcExp(e) ? unparseProcExp(e, unparseWithTVars) :
-    // isLitExp(e) ? makeOk(unparseLitExp(e)) :
-    // isSetExp(e) ? unparseSetExp(e, unparseWithTVars) :
-    // isClassExp(e) ? unparseClassExp(e, unparseWithTVars) :
-    // // DefineExp | Program
-    // isDefineExp(e) ? safe2((vd: string, val: string) => makeOk(`(define ${vd} ${val})`))
-    //                     (unparseVarDecl(e.var, unparseWithTVars), unparse(e.val, unparseWithTVars)) :
-    // isProgram(e) ? bind(unparseLExps(e.exps, unparseWithTVars), (exps: string) => makeOk(`(L5 ${exps})`)) :
-    // e;
-
-
 // L51 
 export const classExpToClassTExp = (ce: ClassExp): ClassTExp => 
     makeClassTExp(ce.typeName.var, map((binding: Binding) => [binding.var.var, binding.var.texp], ce.methods));
