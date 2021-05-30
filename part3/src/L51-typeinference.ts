@@ -108,8 +108,6 @@ export const makeTEnvFromClasses = (parsed: A.Parsed): E.TEnv => {
     const classTNames:string[] = R.map((exp:A.ClassExp)=>exp.typeName.var,classList);    
     const classTypes:T.TVar[] = R.map((exp:A.ClassExp)=>exp.typeName,classList);    
     return E.makeExtendTEnv(classTNames,classTypes,E.makeEmptyTEnv());
-    // const constraint1 = bind(typeofExps(proc.body, extTEnv), (bodyTE: T.TExp) => checkEqualType(bodyTE, proc.returnTE, proc));
-    // return bind(constraint1, _ => makeOk(T.makeProcTExp(argsTEs, proc.returnTE)));
 }
 
 // Purpose: Compute the type of a concrete expression
@@ -301,11 +299,12 @@ export const typeofSet = (exp: A.SetExp, tenv: E.TEnv): Result<T.VoidTExp> =>
 // Then type<class(type fields methods)>(tend) = = [t1 * ... * tn -> type]
 // TODO:
 export const typeofClass = (exp: A.ClassExp, tenv: E.TEnv): Result<T.TExp> => {
-    const newEnv = E.makeExtendTEnv(R.map(v=>v.var,exp.fields),R.map(v=>v.texp, exp.fields),tenv)
-    const vals = R.map((b) => b.val, exp.methods);
+    const newEnv = E.makeExtendTEnv(R.map(v=>v.var,exp.fields),R.map(v=>v.texp, exp.fields),tenv);
+    const fieldsTExp = R.map((field:A.VarDecl)=>field.texp,exp.fields)
+    const vals = R.map((b:A.Binding) => b.val, exp.methods);
     const varTEs = R.map((b) => b.var.texp, exp.methods);
     const constraints = zipWithResult((varTE, val) => bind(typeofExp(val, newEnv),
                                                            (valTE: T.TExp) => checkEqualType(varTE, valTE, exp)),
                                       varTEs, vals);    
-    return bind(constraints, _ => makeOk(T.makeClassTExp(exp.typeName.var,R.map(v=>[v.var.var,v.var.texp],exp.methods))));
+    return bind(constraints, _ => makeOk(T.makeProcTExp(fieldsTExp,T.makeClassTExp(exp.typeName.var,R.map(v=>[v.var.var,v.var.texp],exp.methods)))));
 };
